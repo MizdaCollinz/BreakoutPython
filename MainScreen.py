@@ -1,12 +1,11 @@
 # Imports
-import pygame, sys
-
-
+import pygame, sys, win32api
 from pygame.locals import *
 
 pygame.init()
 
-FPS = 60 # frames per second setting
+#Frame Rate Assignment
+FPS = 60
 fpsClock = pygame.time.Clock()
 fpsClock.tick(FPS)
 
@@ -21,10 +20,11 @@ BRICKWIDTH = 100 #12 bricks across, 4 bricks down
 BRICKHEIGHT = 40
 
 class Player:
+
     def __init__(self):
         self.Lives = 3
         #Position
-        self.X = 0
+        self.X = 500
         self.Y = 780
         #Size
         self.width = 80
@@ -34,33 +34,42 @@ class Player:
         self.direction = "Left"
 
     def Defeat(self):
-        #win32api.MessageBox(0, 'hello', 'title')
-        pass
+        win32api.MessageBox(0,  'You ran out of lives!','Defeat')
+        pygame.quit()
+        sys.exit(0)
 
 class Ball:
-    def __init__(self,player):
+
+    def __init__(self,player,bricklist):
         self.X = 600
-        self.Y = 400
+        self.Y = 200
         self.Speed = [0,1]
         self.player = player
+        self.started = False
 
     def MoveBall(self):
         self.X += self.Speed[0]
-        if self.X < 0:
-            self.X = 1
+        if self.X < 10:
+            self.X = 10
             self.Speed[0] = -self.Speed[0]
-        elif self.X > 1200:
-            self.X = 1199
+        elif self.X > 1190:
+            self.X = 1190
             self.Speed[0] = -self.Speed[0]
 
         self.Y += self.Speed[1]
-        if self.Y < 0:
-            self.Y = 1
-            self.speed[1] = -self.speed[1]
-        elif self.Y > 800:
+        if self.Y < 10:
+            self.Y = 10
+            self.Speed[1] = -self.Speed[1]
+        elif self.Y > 790:
             #ResetBall
             self.resetBall()
-            pass
+
+        #Check for collisions with other objects
+        if self.Y > (770): #WindowSize - Ball Radius - Player Height
+            self.CheckPlayer()
+        elif self.Y <170:
+            self.CheckHit()
+
 
     def resetBall(self):
         #Lose a life
@@ -69,30 +78,108 @@ class Ball:
             self.player.Defeat()
 
         #Reset Position and speed
-        self.speed = [0,1]
+        self.Speed = [0,1]
         self.X = 600
         self.Y = 400
 
-#Brick Flags - Setup
-brickFlagList = []
-for i in range(12):
-        brickFlagList.append([1] * 4)
+    def CheckPlayer(self):
+        self.Corners()
+        if self.left > self.player.X + 40 or self.right < self.player.X - 40:
+            #No Contact
+            print("Ball is completely separate from player")
+            pass
+        elif self.left > self.player.X - 40 and self.right < self.player.X + 40:
+            #Contact
+            if self.Speed[1] > 0: #If falling, send ball upward
+                print("Contact")
+                self.Speed[1] = -self.Speed[1]
+        else:
+            print("Ball is lost")
+
+
+
+        pass
+    def CheckHit(self):
+        #Find which brick was hit if hit
+        self.Corners()
+
+        columns = self.CheckColumn()
+        rows = self.CheckRow()
+
+        brickList = []
+
+        for row in rows:
+            for column in columns:
+                brickList.append((row,column))
+
+        return brickList
+
+
+    def CheckColumn(self):
+        #Two modulus 0-10 and 90-100
+        if(self.X % 100) < 10:
+            column = self.X/100
+            columns = (column-1,column)
+        elif (self.X % 100) >= 90:
+            column = self.X/100
+            columns = (column,column+1)
+        else:
+            columns = self.X/100
+        return columns
+
+    def CheckRow(self):
+        if(self.Y % 40) < 10:
+            row = self.Y/40
+            rows = (row-1,row)
+        elif(self.Y % 40) >= 30:
+            row = self.Y/40
+            if(row<3):
+                rows = (row,row+1)
+            else:
+                rows = row
+        else:
+            rows = self.Y/40
+
+        return rows
+
+
+    def Corners(self):
+        self.left = self.X - 10
+        self.right = self.X + 10
+        self.top = self.Y -10
+        self.bottom = self.Y +10
+
+class BrickList:
+
+    def __init__(self):
+        self.flags = []
+        for i in range(12):
+            self.flags.append([1] * 4)
+    def HitBrick(self,x,y):
+        if self.flags[x][y] == 1:
+            self.flags[x][y] = 0
+            return True
+        else:
+            return False
+
+
+
 
 # Resolution of Display Surface
 DISPLAYSURF = pygame.display.set_mode((1200,800))
 pygame.display.set_caption('Simple Breakout Game')
 
 
-
 fontObj = pygame.font.Font('freesansbold.ttf', 32)
-textSurfaceObj = fontObj.render('Hello world!', True, WHITE, BLUE)
+textSurfaceObj = fontObj.render('   Breakout   ', True, WHITE, BLUE)
 textRectObj = textSurfaceObj.get_rect()
-textRectObj.center = (300, 16)
+textRectObj.center = (600, 600)
 
 #Initialise main objects
-
 player = Player()
-ball = Ball(player)
+flagList = BrickList()
+ball = Ball(player,flagList)
+
 
 while True: #Game Loop
     # Draw on surface
@@ -102,7 +189,7 @@ while True: #Game Loop
     #Draw unbroken Bricks
     for i in range(12):
         for j in range(4):
-            if (brickFlagList[i][j] == 1):
+            if (flagList.flags[i][j] == 1):
                 brickRect = pygame.Rect(i*BRICKWIDTH,j*BRICKHEIGHT,BRICKWIDTH,BRICKHEIGHT)
                 brickSurface = pygame.draw.rect(DISPLAYSURF,BLUE,(brickRect))
                 brickSurface = pygame.draw.rect(DISPLAYSURF, BORDERBLUE, (brickRect),1)
@@ -113,11 +200,13 @@ while True: #Game Loop
     playerSurface = pygame.draw.rect(DISPLAYSURF, BLUE, playerRect)
 
     #Draw Ball
-    ball.MoveBall()
-    ballGraphic = pygame.draw.circle(DISPLAYSURF,BLACK,(ball.X,ball.Y),10)
+    if ball.started:
+        ball.MoveBall()
+        ballGraphic = pygame.draw.circle(DISPLAYSURF,BLACK,(ball.X,ball.Y),10)
 
     #Move the Player's position
     if player.moving:
+        ball.started = True
         if player.direction == "Left":
             player.X -= 1
             if (player.X < 0):
