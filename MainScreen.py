@@ -24,8 +24,8 @@ class Player:
     def __init__(self):
         self.Lives = 3
         #Position
-        self.X = 500
-        self.Y = 780
+        self.X = 540
+        self.Y = 790
         #Size
         self.width = 80
         self.height = 20
@@ -84,17 +84,18 @@ class Ball:
 
     def CheckPlayer(self):
         self.Corners()
-        if self.left > self.player.X + 40 or self.right < self.player.X - 40:
+        if self.left > (self.player.X + 40) or self.right < (self.player.X - 40):
             #No Contact
             print("Ball is completely separate from player")
             pass
-        elif self.left > self.player.X - 40 and self.right < self.player.X + 40:
+        elif self.left > (self.player.X - 40) and self.right < (self.player.X + 40):
             #Contact
             if self.Speed[1] > 0: #If falling, send ball upward
                 print("Contact")
                 self.Speed[1] = -self.Speed[1]
         else:
-            print("Ball is lost")
+            print "Ball X is {} and Y is {}".format(self.X,self.Y)
+            print "Player is at {}".format(self.player.X)
 
 
 
@@ -108,9 +109,14 @@ class Ball:
 
         brickList = []
 
-        for row in rows:
-            for column in columns:
-                brickList.append((row,column))
+
+
+        for i in range(2):
+            for j in range(2):
+                if rows[i] < 0 or columns[j] < 0:
+                    continue
+                else:
+                    brickList.append((rows[i],columns[j]))
 
         return brickList
 
@@ -124,7 +130,7 @@ class Ball:
             column = self.X/100
             columns = (column,column+1)
         else:
-            columns = self.X/100
+            columns = (self.X/100,-1)
         return columns
 
     def CheckRow(self):
@@ -136,9 +142,9 @@ class Ball:
             if(row<3):
                 rows = (row,row+1)
             else:
-                rows = row
+                rows = (row,-1)
         else:
-            rows = self.Y/40
+            rows = (self.Y/40,-1)
 
         return rows
 
@@ -196,7 +202,7 @@ while True: #Game Loop
 
 
     #Draw player controlled block
-    playerRect = pygame.Rect(player.X,player.Y,player.width,player.height)
+    playerRect = pygame.Rect(player.X-40,player.Y-10,player.width,player.height)
     playerSurface = pygame.draw.rect(DISPLAYSURF, BLUE, playerRect)
 
     #Draw Ball
