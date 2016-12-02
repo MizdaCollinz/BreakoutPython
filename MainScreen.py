@@ -9,6 +9,9 @@ FPS = 60
 fpsClock = pygame.time.Clock()
 fpsClock.tick(FPS)
 
+#Move Every X Frames
+XFRAMES = 3
+
 #Colors
 BLACK = (0,0,0)
 WHITE = (255,255,255)
@@ -18,6 +21,8 @@ BLUE = (65,105,225)
 #Block Sizes
 BRICKWIDTH = 100 #12 bricks across, 4 bricks down
 BRICKHEIGHT = 40
+
+
 
 class Player:
 
@@ -46,8 +51,15 @@ class Ball:
         self.Speed = [0,1]
         self.player = player
         self.started = False
+        self.move = 0
 
     def MoveBall(self):
+        if self.move < XFRAMES:
+            self.move+= 1
+            return
+        else:
+            self.move = 0
+
         self.X += self.Speed[0]
         if self.X < 10:
             self.X = 10
@@ -60,7 +72,7 @@ class Ball:
         if self.Y < 10:
             self.Y = 10
             self.Speed[1] = -self.Speed[1]
-        elif self.Y > 790:
+        elif self.Y > 800:
             #ResetBall
             self.resetBall()
 
@@ -80,7 +92,7 @@ class Ball:
         #Reset Position and speed
         self.Speed = [0,1]
         self.X = 600
-        self.Y = 400
+        self.Y = 200
 
     def CheckPlayer(self):
         self.Corners()
@@ -89,17 +101,37 @@ class Ball:
             print("Ball is completely separate from player")
             pass
         elif self.left > (self.player.X - 40) and self.right < (self.player.X + 40):
-            #Contact
+            #Contact with player
             if self.Speed[1] > 0: #If falling, send ball upward
                 print("Contact")
                 self.Speed[1] = -self.Speed[1]
+
+                #Determine x axis speed change
+                #Calculate offset of the hit from the centre of the player brick
+                offset = self.X - self.player.X
+                halfPlayer = self.player.width/2
+
+                print("The offset is {}").format(offset)
+                if offset > (halfPlayer*0.75):
+                    self.Speed[0]= 3
+                elif offset> (halfPlayer*0.50):
+                    self.Speed[0]= 2
+                elif offset> (halfPlayer*0.25):
+                    self.Speed[0] = 1
+                elif offset< (-halfPlayer*0.75):
+                    self.Speed[0] = -3
+                elif offset< (-halfPlayer*0.5):
+                    self.Speed[0] = -2
+                elif offset< (-halfPlayer*0.25):
+                    self.Speed[0] = -1
+
+                #Move to next spot rather than being placed inside the player brick
+                self.move = XFRAMES
+                self.MoveBall()
         else:
             print "Ball X is {} and Y is {}".format(self.X,self.Y)
             print "Player is at {}".format(self.player.X)
 
-
-
-        pass
     def CheckHit(self):
         #Find which brick was hit if hit
         self.Corners()
