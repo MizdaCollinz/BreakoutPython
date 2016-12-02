@@ -10,7 +10,7 @@ fpsClock = pygame.time.Clock()
 fpsClock.tick(FPS)
 
 #Move Every X Frames
-XFRAMES = 3
+XFRAMES = 2
 
 #Colors
 BLACK = (0,0,0)
@@ -32,7 +32,7 @@ class Player:
         self.X = 540
         self.Y = 790
         #Size
-        self.width = 80
+        self.width = 120
         self.height = 20
         #Movement
         self.moving = False
@@ -96,20 +96,24 @@ class Ball:
 
     def CheckPlayer(self):
         self.Corners()
-        if self.left > (self.player.X + 40) or self.right < (self.player.X - 40):
+        halfPlayer = self.player.width / 2
+
+
+        if self.left > (self.player.X + halfPlayer) or self.right < (self.player.X - halfPlayer):
             #No Contact
             print("Ball is completely separate from player")
             pass
-        elif self.left > (self.player.X - 40) and self.right < (self.player.X + 40):
+        elif self.right > (self.player.X - halfPlayer) and self.left < (self.player.X + halfPlayer):
             #Contact with player
             if self.Speed[1] > 0: #If falling, send ball upward
-                print("Contact")
+
+                print("Contact with player")
                 self.Speed[1] = -self.Speed[1]
 
                 #Determine x axis speed change
                 #Calculate offset of the hit from the centre of the player brick
                 offset = self.X - self.player.X
-                halfPlayer = self.player.width/2
+
 
                 print("The offset is {}").format(offset)
                 if offset > (halfPlayer*0.75):
@@ -208,21 +212,30 @@ DISPLAYSURF = pygame.display.set_mode((1200,800))
 pygame.display.set_caption('Simple Breakout Game')
 
 
-fontObj = pygame.font.Font('freesansbold.ttf', 32)
-textSurfaceObj = fontObj.render('   Breakout   ', True, WHITE, BLUE)
-textRectObj = textSurfaceObj.get_rect()
-textRectObj.center = (600, 600)
-
 #Initialise main objects
 player = Player()
 flagList = BrickList()
 ball = Ball(player,flagList)
 
+#Create Written Text on surface
+fontObj = pygame.font.Font('freesansbold.ttf', 32)
+fontObj2 = pygame.font.Font('freesansbold.ttf',20)
+textSurfaceObj = fontObj.render('   Breakout    ', True, WHITE, BLUE)
+textRectObj = textSurfaceObj.get_rect()
+textRectObj.center = (600, 600)
+
+
 
 while True: #Game Loop
     # Draw on surface
     DISPLAYSURF.fill(WHITE)
+
+    textSurfaceObj2 = fontObj2.render('   {} lives  '.format(player.Lives), True, WHITE, BLUE)
+    textRectObj2 = textSurfaceObj.get_rect()
+    textRectObj2.center = (660, 632)
+
     DISPLAYSURF.blit(textSurfaceObj, textRectObj)
+    DISPLAYSURF.blit(textSurfaceObj2, textRectObj2)
 
     #Draw unbroken Bricks
     for i in range(12):
@@ -234,7 +247,7 @@ while True: #Game Loop
 
 
     #Draw player controlled block
-    playerRect = pygame.Rect(player.X-40,player.Y-10,player.width,player.height)
+    playerRect = pygame.Rect(player.X-(player.width/2),player.Y-10,player.width,player.height)
     playerSurface = pygame.draw.rect(DISPLAYSURF, BLUE, playerRect)
 
     #Draw Ball
