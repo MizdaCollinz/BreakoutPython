@@ -1,5 +1,5 @@
 # Imports
-import pygame, sys, win32api, Ball, Player, BrickList
+import pygame, sys, os, win32api, Ball, Player, BrickList
 from pygame.locals import *
 
 pygame.init()
@@ -13,8 +13,10 @@ fpsClock.tick(FPS)
 #Colors
 BLACK = (0,0,0)
 WHITE = (255,255,255)
-BORDERBLUE = (25,25,112)
 BLUE = (65,105,225)
+ICE = (165, 242, 243,100)
+DARKICE = (167,242,255)
+RED = (255,0,0)
 
 #Block Sizes
 BRICKWIDTH = 100 #12 bricks across, 4 bricks down
@@ -23,7 +25,7 @@ BRICKHEIGHT = 40
 # Resolution of Display Surface
 DISPLAYSURF = pygame.display.set_mode((1200,800))
 pygame.display.set_caption('Simple Breakout Game')
-
+print(pygame.font.get_fonts())
 
 #Initialise main objects
 player = Player.Player()
@@ -31,22 +33,29 @@ flagList = BrickList.BrickList()
 ball = Ball.Ball(player,flagList)
 
 #Create Written Text on surface
-fontObj = pygame.font.Font('freesansbold.ttf', 32)
-fontObj2 = pygame.font.Font('freesansbold.ttf',20)
-textSurfaceObj = fontObj.render('   Breakout    ', True, WHITE, BLUE)
+fontObj = pygame.font.Font(pygame.font.match_font("segoeuiblack"), 32)
+fontObj2 = pygame.font.Font(pygame.font.match_font("segoeuiblack"),16)
+
+#Create Title Text Object
+textSurfaceObj = fontObj.render('   Breakout    ', True, WHITE, DARKICE)
 textRectObj = textSurfaceObj.get_rect()
 textRectObj.center = (600, 600)
 
-
+#Create the background
+bgsurface = pygame.image.load(os.path.join('img', 'frost&fog42.jpg'))
+bg = bgsurface.convert()
+bgrect = bgsurface.get_rect()
 
 while True: #Game Loop
     # Draw on surface
-    DISPLAYSURF.fill(WHITE)
+    DISPLAYSURF.blit(bg,bgrect)
 
-    textSurfaceObj2 = fontObj2.render('   {} lives  '.format(player.Lives), True, WHITE, BLUE)
+    #Create Player lives text object
+    textSurfaceObj2 = fontObj2.render('   {} lives  '.format(player.Lives), True, WHITE, DARKICE)
     textRectObj2 = textSurfaceObj.get_rect()
-    textRectObj2.center = (660, 632)
+    textRectObj2.center = (660, 650)
 
+    #Present the two text objects, Game title and the number of Player Lives
     DISPLAYSURF.blit(textSurfaceObj, textRectObj)
     DISPLAYSURF.blit(textSurfaceObj2, textRectObj2)
 
@@ -55,18 +64,24 @@ while True: #Game Loop
         for j in range(4):
             if (flagList.flags[i][j] == 1):
                 brickRect = pygame.Rect(i*BRICKWIDTH,j*BRICKHEIGHT,BRICKWIDTH,BRICKHEIGHT)
-                brickSurface = pygame.draw.rect(DISPLAYSURF,BLUE,(brickRect))
-                brickSurface = pygame.draw.rect(DISPLAYSURF, BORDERBLUE, (brickRect),1)
+
+
+                #brickSurface = pygame.draw.rect(DISPLAYSURF,ICE,(brickRect))
+                s = pygame.Surface((BRICKWIDTH, BRICKHEIGHT), pygame.SRCALPHA)  # per-pixel alpha
+                s.fill((ICE))  # notice the alpha value in the color
+                DISPLAYSURF.blit(s, brickRect)
+                brickSurface = pygame.draw.rect(DISPLAYSURF, WHITE, (brickRect),1)
 
 
     #Draw player controlled block
     playerRect = pygame.Rect(player.X-(player.width/2),player.Y-10,player.width,player.height)
-    playerSurface = pygame.draw.rect(DISPLAYSURF, BLUE, playerRect)
+    playerSurface = pygame.draw.rect(DISPLAYSURF, ICE, playerRect)
+    playerBorder = pygame.draw.rect(DISPLAYSURF,WHITE,playerRect,1)
 
     #Draw Ball
     if ball.started:
         ball.MoveBall()
-        ballGraphic = pygame.draw.circle(DISPLAYSURF,BLACK,(ball.X,ball.Y),10)
+        ballGraphic = pygame.draw.circle(DISPLAYSURF,WHITE,(ball.X,ball.Y),10)
 
     #Move the Player's position
     if player.moving:
