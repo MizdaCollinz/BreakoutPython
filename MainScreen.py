@@ -49,7 +49,7 @@ bgrect = bgsurface.get_rect()
 
 #Position Lives Text Rectangle
 textRectObj2 = textSurfaceObj.get_rect()
-textRectObj2.center = (660, 650)
+textRectObj2.center = (660, 640)
 
 #Brick Design
 brickSurface = pygame.Surface((BRICKWIDTH, BRICKHEIGHT), pygame.SRCALPHA)  # per-pixel alpha
@@ -60,7 +60,7 @@ while True: #Game Loop
     DISPLAYSURF.blit(bg,bgrect)
 
     #Create Player lives text object
-    textSurfaceObj2 = fontObj2.render('   {} lives  '.format(player.Lives), True, DARKWHITE, DARKICE)
+    textSurfaceObj2 = fontObj2.render('   {} x lives  '.format(player.Lives), True, DARKWHITE, DARKICE)
 
 
     #Present the two text objects, Game title and the number of Player Lives
