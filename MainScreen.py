@@ -13,9 +13,10 @@ fpsClock.tick(FPS)
 #Colors
 BLACK = (0,0,0)
 WHITE = (255,255,255)
+DARKWHITE = (255, 245, 238)
 BLUE = (65,105,225)
 ICE = (165, 242, 243,100)
-DARKICE = (167,242,255)
+DARKICE = (24, 204, 212,100)
 RED = (255,0,0)
 
 #Block Sizes
@@ -37,7 +38,7 @@ fontObj = pygame.font.Font(pygame.font.match_font("segoeuiblack"), 32)
 fontObj2 = pygame.font.Font(pygame.font.match_font("segoeuiblack"),16)
 
 #Create Title Text Object
-textSurfaceObj = fontObj.render('   Breakout    ', True, WHITE, DARKICE)
+textSurfaceObj = fontObj.render('   Breakout    ', True, DARKWHITE, DARKICE)
 textRectObj = textSurfaceObj.get_rect()
 textRectObj.center = (600, 600)
 
@@ -46,14 +47,21 @@ bgsurface = pygame.image.load(os.path.join('img', 'frost&fog42.jpg'))
 bg = bgsurface.convert()
 bgrect = bgsurface.get_rect()
 
+#Position Lives Text Rectangle
+textRectObj2 = textSurfaceObj.get_rect()
+textRectObj2.center = (660, 650)
+
+#Brick Design
+brickSurface = pygame.Surface((BRICKWIDTH, BRICKHEIGHT), pygame.SRCALPHA)  # per-pixel alpha
+brickSurface.fill((DARKICE))  # notice the alpha value in the color
+
 while True: #Game Loop
     # Draw on surface
     DISPLAYSURF.blit(bg,bgrect)
 
     #Create Player lives text object
-    textSurfaceObj2 = fontObj2.render('   {} lives  '.format(player.Lives), True, WHITE, DARKICE)
-    textRectObj2 = textSurfaceObj.get_rect()
-    textRectObj2.center = (660, 650)
+    textSurfaceObj2 = fontObj2.render('   {} lives  '.format(player.Lives), True, DARKWHITE, DARKICE)
+
 
     #Present the two text objects, Game title and the number of Player Lives
     DISPLAYSURF.blit(textSurfaceObj, textRectObj)
@@ -64,18 +72,13 @@ while True: #Game Loop
         for j in range(4):
             if (flagList.flags[i][j] == 1):
                 brickRect = pygame.Rect(i*BRICKWIDTH,j*BRICKHEIGHT,BRICKWIDTH,BRICKHEIGHT)
-
-
-                #brickSurface = pygame.draw.rect(DISPLAYSURF,ICE,(brickRect))
-                s = pygame.Surface((BRICKWIDTH, BRICKHEIGHT), pygame.SRCALPHA)  # per-pixel alpha
-                s.fill((ICE))  # notice the alpha value in the color
-                DISPLAYSURF.blit(s, brickRect)
-                brickSurface = pygame.draw.rect(DISPLAYSURF, WHITE, (brickRect),1)
+                DISPLAYSURF.blit(brickSurface, brickRect)
+                pygame.draw.rect(DISPLAYSURF, WHITE, (brickRect),1)
 
 
     #Draw player controlled block
     playerRect = pygame.Rect(player.X-(player.width/2),player.Y-10,player.width,player.height)
-    playerSurface = pygame.draw.rect(DISPLAYSURF, ICE, playerRect)
+    playerSurface = pygame.draw.rect(DISPLAYSURF, DARKICE, playerRect)
     playerBorder = pygame.draw.rect(DISPLAYSURF,WHITE,playerRect,1)
 
     #Draw Ball
@@ -121,10 +124,12 @@ while True: #Game Loop
     pygame.display.update()
 
 
-#BLEH
+#Unused Currently - Sound Code
 def PlaySound():
     soundObj = pygame.mixer.Sound('beeps.wav')
     soundObj.play()
     import time
     time.sleep(1) # wait and let the sound play for 1 second
     soundObj.stop()
+
+#

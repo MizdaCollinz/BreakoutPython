@@ -1,5 +1,5 @@
 # Move Every X Frames
-XFRAMES = 2
+XFRAMES = 1
 
 class Ball:
     def __init__(self,player,bricklist):
